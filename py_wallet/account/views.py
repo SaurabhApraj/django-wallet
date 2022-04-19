@@ -1,3 +1,6 @@
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, HttpResponseRedirect
 from account.models import TransactionHistory
@@ -40,7 +43,7 @@ def userSignup(request):
         if form.is_valid():
             em = form.cleaned_data['email']
             pw = form.cleaned_data['password']
-            reg = User(email=em, password=pw)
+            reg = User.objects.create(email=em, password=pw)
             reg.save()
             return redirect('/login')
     form = SignupForm()
@@ -52,12 +55,12 @@ def userlogin(request):
         fm = AuthenticationForm(request=request, data=request.POST)
         if fm.is_valid():
             # uemail = fm.cleaned_data.get('email', None)
-            uemail = fm.cleaned_data['email']
+            uemail = fm.cleaned_data['username']
             upass = fm.cleaned_data['password']
             user = authenticate(email=uemail, password=upass)
             if user is not None:
                 login(request, user)
-                return HttpResponseRedirect('')
+                return redirect("dashboard")
     fm = AuthenticationForm()
     return render(request, 'py_wallet/login.html', {'form': fm})
 
@@ -79,6 +82,8 @@ def registerUser(request):
 
 
 @api_view(['GET'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def checkBalance(request):
     check_balance = User.objects.get(id=request.user.id)
     serializer = CheckBalanceSerializer(check_balance)
@@ -86,6 +91,8 @@ def checkBalance(request):
 
 
 @api_view(['PATCH'])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def updateBalance(request):
     try:
         update_balance = User.objects.get(id=request.user.id)
@@ -93,8 +100,8 @@ def updateBalance(request):
             update_balance, data=request.data, partial=True)
 
         if not serializer.is_valid():
-            return Response({
-                'status': 403, 'error': serializer.errors, 'message': 'Something went wrong'})
+            return Response(status=400, data={
+                'status': 400, 'error': serializer.errors, 'message': 'Validation errors.'})
         serializer.save()
 
         return Response({'status': 200, 'payload': serializer.data, 'message': 'Your data is saved'})
