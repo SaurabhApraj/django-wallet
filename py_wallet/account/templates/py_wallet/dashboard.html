@@ -1,0 +1,37 @@
+{% load static %}
+{% block content %}
+<h1>Welcome, {{user.email}}</h1>
+<p>Available Fund : Rs. {{user.balance}}</p>
+<p>Manage Funds</p>
+<form action="" method="post">
+    {% csrf_token %}
+      <table>
+        {{form.as_table}}
+      </table>
+      <input type="submit" value="Add" />
+      <input type="submit" value="Remove" />
+</form>
+
+<table border="1">
+    <tr>
+        <td>DateTime</td>
+        <td>Amount</td>
+        <td>Added By</td>
+    </tr>
+    {% if histories %}
+        {% for history in histories %}
+        <tr>
+            <td>{{history.created_at}}</td>
+            <td>{{history.transaction_amount}}</td>
+            <td>{{history.added_by_id}}</td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3">
+                No Transaction History
+            </td>
+        </tr>
+    {% endif %}
+</table>
+{% endblock content %}
