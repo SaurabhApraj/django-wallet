@@ -1,3 +1,4 @@
+from unicodedata import name
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -19,17 +20,24 @@ def home_page(request):
     if request.user.is_authenticated:
         user_id = request.user.id
         user = User.objects.get(id=user_id)
+
         form = AddRemoveBalanceForm(request.POST or None)
+
         if request.method == "POST" and form.is_valid():
             ubalance = form.cleaned_data['balance']
             if ubalance > 0.00:
-                user.balance += ubalance
-                # user.balance -= ubalance
-                messages.success(request, 'Amount deposited successfully')
+                if request.POST.get('add'):
+                    user.balance += ubalance
+                    messages.success(request, 'Amount deposited successfully')
+
+                if request.POST.get('remove'):
+                    user.balance -= ubalance
+                    messages.success(request, 'Amount widthdraw successfully')
                 TransactionHistory(user=request.user, transaction_amount=ubalance, added_by=request.user).save()
             else:
                 messages.error(request, 'Enter amount greater then 0')
             user.save()
+
         form = AddRemoveBalanceForm()
         histories = TransactionHistory.objects.filter(user=user_id).order_by('-id')
 
