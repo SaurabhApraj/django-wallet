@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     
     'account',
     'rest_framework',
-    'django_extensions'
+    # 'django_extensions',
 ]
 
 AUTH_USER_MODEL = 'account.User'

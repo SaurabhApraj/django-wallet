@@ -1,6 +1,24 @@
 {% load static %}
 {% block content %}
-<h1>Welcome, {{user.email}}</h1>
+<style>
+    .container{
+        margin:0 auto;
+        width:1300px;
+        display:flex;
+        justify-content:space-between;
+    }
+    .error{
+        color:red;
+    }
+    .success{
+        color:green;
+    }
+</style>
+
+<div class="container">
+    <h1>Welcome, {{user.email}}</h1>
+    <a href="{% url 'logout' %}">Logout</a>
+</div>
 <p>Available Fund : Rs. {{user.balance}}</p>
 <p>Manage Funds</p>
 <form action="" method="post">
@@ -12,18 +30,26 @@
       <input type="submit" value="Remove" />
 </form>
 
+{% for message in messages %}
+    {% if message.tags == 'error' %}
+        <p class="error">{{message}}</p>
+    {% else %}
+        <p class="success">{{message}}</p>
+    {% endif %}
+{% endfor %}
+
 <table border="1">
     <tr>
         <td>DateTime</td>
         <td>Amount</td>
         <td>Added By</td>
     </tr>
-    {% if histories %}
-        {% for history in histories %}
+    {% if transactions %}
+        {% for transaction in transactions %}
         <tr>
-            <td>{{history.created_at}}</td>
-            <td>{{history.transaction_amount}}</td>
-            <td>{{history.added_by.email}}</td>
+            <td>{{transaction.created_at}}</td>
+            <td>{{transaction.transaction_amount}}</td>
+            <td>{{transaction.added_by.email}}</td>
         </tr>
         {% endfor %}
     {% else %}
@@ -34,4 +60,11 @@
         </tr>
     {% endif %}
 </table>
+<div>
+    <a class="page-link" href="/?page=1">&laquo;</a>
+    {% for n in totalpagecount %}
+        <a class="page-link" href="/?page={{n}}">{{n}}</a>
+    {% endfor %}
+    <a class="page-link" href="/?page={{lastpage}}">&raquo;</a>
+  </div>
 {% endblock content %}
